@@ -5,22 +5,42 @@ Here goes the program description
 import sys
 import os
 import discord
+from discord.ext import commands
 from dotenv import load_dotenv
 load_dotenv()
 
 intents = discord.Intents.default()
 intents.message_content = True
 
-client = discord.Client(intents=intents)
+bot = commands.Bot(command_prefix='?', intents=intents)
 
-@client.event
+AVRAE_USER_ID = 261302296103747584
+MY_GUILD = discord.Object(id=799318267750514728)
+
+# sync the slash command to your server
+@bot.event
 async def on_ready():
-    print(f'We have logged in as {client.user}')
+    print(f'Logged in as {bot.user}')
 
-@client.event
+@bot.tree.command(name="rule", description="Lookup D&D 5e rules", guild=MY_GUILD)
+async def slash_one(interaction: discord.Interaction, text: str = ''):
+    await interaction.response.send_message(f'You got me: {text}')
+
+@bot.command()
+async def sync(ctx):
+    if ctx.author.id == 471751375248687125:
+        print(f'Received request to sync to {ctx.guild.name} ({ctx.guild.id})')
+        await bot.tree.sync(guild=discord.Object(id=ctx.guild.id))
+        await ctx.send('Command tree synced.')
+    else:
+        await ctx.send('You must be the bot owner to run this command!')
+
+@bot.event
 async def on_message(message):
-    if message.author == client.user: return
-    if message.author.id != 261302296103747584: return
+    if message.author == bot.user: return
+    if message.author.id != AVRAE_USER_ID:
+        await bot.process_commands(message)
+        return
     if len(message.embeds) == 0: return
 
     for embed in message.embeds:
@@ -36,4 +56,4 @@ async def on_message(message):
         await message.channel.send(msg)
 
 discord_token = os.environ['DISCORD_BOT_TOKEN']
-client.run(discord_token)
+bot.run(discord_token)
