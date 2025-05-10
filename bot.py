@@ -30,7 +30,7 @@ async def on_ready():
 async def slash_one(interaction: discord.Interaction, query: str):
     await interaction.response.send_message(f'Your query is: {query}')
 
-global_synced = [1]
+global_synced = []
 @bot.command()
 async def sync(ctx, *args):
     if ctx.author.id == DEV_ID:
