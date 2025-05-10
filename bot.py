@@ -64,7 +64,7 @@ async def on_message(message):
         crit_s = f'These characters got hit by a critical hit:{crit_s}' if crit_s else ''
         dex1_s = f'These characters rolled 1 on a Dex save:{dex1_s}' if dex1_s else ''
         msg = '\n'.join(f for f in [crit_s, dex1_s] if f)
-        msg = f'{msg}\n:information_source: Check for on-crit or Alchemist Potion\'s Belt effect'
+        msg = f'{msg}\n:information_source: Check for on-crit or Alchemist\'s Potion Belt effect'
         await message.reply(msg)
 
 def parse_message(message):
