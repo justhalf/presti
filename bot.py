@@ -12,26 +12,36 @@ load_dotenv()
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix='?', intents=intents)
+DEV_ID = int(os.environ['DEV_ID'])
+bot = commands.Bot(command_prefix='?',
+                   owner_ids=[DEV_ID],
+                   intents=intents,
+                   )
 
 AVRAE_USER_ID = 261302296103747584
-MY_GUILD = discord.Object(id=799318267750514728)
+TEST_GUILD = discord.Object(id=os.environ['TEST_GUILD_ID'])
 
 # sync the slash command to your server
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
 
-@bot.tree.command(name="rule", description="Lookup D&D 5e rules", guild=MY_GUILD)
-async def slash_one(interaction: discord.Interaction, text: str = ''):
-    await interaction.response.send_message(f'You got me: {text}')
+@bot.tree.command(name="rule", description="Lookup D&D 5e rules")
+async def slash_one(interaction: discord.Interaction, query: str):
+    await interaction.response.send_message(f'Your query is: {query}')
 
+global_synced = [1]
 @bot.command()
-async def sync(ctx):
-    if ctx.author.id == 471751375248687125:
+async def sync(ctx, *args):
+    if ctx.author.id == DEV_ID:
         print(f'Received request to sync to {ctx.guild.name} ({ctx.guild.id})')
-        await bot.tree.sync(guild=discord.Object(id=ctx.guild.id))
-        await ctx.send('Command tree synced.')
+        if not global_synced and args and args[0].lower() == 'all':
+            global_synced.append(1)
+            await bot.tree.sync()
+            await ctx.send('Command tree synced globally.')
+        else:
+            await bot.tree.sync(guild=discord.Object(id=ctx.guild.id))
+            await ctx.send('Command tree synced on this server.')
     else:
         await ctx.send('You must be the bot owner to run this command!')
 
